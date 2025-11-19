@@ -1,0 +1,43 @@
+#!/bin/bash
+# Setup the development environment
+
+set -e
+
+echo "Setting up little-free-library-detector..."
+
+# Setup Python environment for training
+echo ""
+echo "Setting up Python environment..."
+cd training
+if [ ! -d "venv" ]; then
+    python3 -m venv venv
+    echo "✓ Created Python virtual environment"
+else
+    echo "✓ Virtual environment already exists"
+fi
+
+source venv/bin/activate
+pip install -q --upgrade pip
+pip install -q -r requirements.txt
+echo "✓ Installed Python dependencies"
+deactivate
+
+# Setup Node.js for inference
+echo ""
+echo "Setting up Node.js environment..."
+cd ../inference
+if [ ! -d "node_modules" ]; then
+    npm install
+    echo "✓ Installed Node.js dependencies"
+else
+    echo "✓ Node.js dependencies already installed"
+fi
+
+cd ..
+echo ""
+echo "✓ Setup complete!"
+echo ""
+echo "Next steps:"
+echo "  1. Add training images to training-data/positives and training-data/negatives"
+echo "  2. Run: scripts/organize-data"
+echo "  3. Run: scripts/train"

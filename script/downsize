@@ -1,0 +1,30 @@
+#!/bin/bash
+# Downsize training images to reduce file size
+
+set -e
+
+echo "Downsizing training images..."
+echo ""
+
+cd training
+
+# Create virtual environment if it doesn't exist
+if [ ! -d ".venv" ]; then
+    echo "Creating virtual environment..."
+    uv venv
+fi
+
+source .venv/bin/activate
+
+echo "Installing dependencies..."
+uv pip install -q -r requirements.txt
+
+python downsize_images.py --max-size 1024 --quality 85
+
+deactivate
+cd ..
+
+echo ""
+echo "✓ Downsizing complete!"
+echo ""
+echo "Next step: script/split-data"

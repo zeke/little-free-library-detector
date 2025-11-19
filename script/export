@@ -1,0 +1,42 @@
+#!/bin/bash
+# Export trained PyTorch model to ONNX format
+
+set -e
+
+if [ ! -f "models/library_detector.pth" ]; then
+    echo "Error: Trained model not found"
+    echo "Run: script/train"
+    exit 1
+fi
+
+echo "Exporting model to ONNX format..."
+echo ""
+
+cd training
+
+# Create virtual environment if it doesn't exist
+if [ ! -d ".venv" ]; then
+    echo "Creating virtual environment..."
+    uv venv
+fi
+
+source .venv/bin/activate
+
+echo "Installing dependencies..."
+uv pip install -q -r requirements.txt
+
+python export_onnx.py
+
+deactivate
+cd ..
+
+echo ""
+echo "✓ Export complete!"
+echo ""
+echo "Files created:"
+echo "  models/library_detector.onnx"
+echo "  models/library_detector_labels.txt"
+echo ""
+echo "Next steps:"
+echo "  Test in Node.js: script/test <image_path>"
+echo "  Test in browser: script/serve (then visit http://localhost:8000/inference/browser.html)"

@@ -1,0 +1,55 @@
+#!/bin/bash
+# Train the model
+
+set -e
+
+# Check if data exists
+if [ ! -d "data/train/library" ] || [ ! -d "data/train/not_library" ]; then
+    echo "Error: Training data not found"
+    echo "Run: script/organize-data"
+    exit 1
+fi
+
+# Count training samples
+train_count=$(find data/train -type f | wc -l | tr -d ' ')
+if [ "$train_count" -lt 50 ]; then
+    echo "Warning: Only $train_count training images. This may not be enough for good results."
+    echo ""
+fi
+
+echo "Training little free library detector..."
+echo ""
+
+cd training
+
+# Create virtual environment if it doesn't exist
+if [ ! -d ".venv" ]; then
+    echo "Creating virtual environment..."
+    uv venv
+fi
+
+source .venv/bin/activate
+
+# Install training dependencies
+echo "Installing training dependencies..."
+uv pip install -q -r requirements.txt
+
+# Default to 10 epochs, but allow override
+EPOCHS=${1:-10}
+
+echo ""
+echo "Training for $EPOCHS epochs..."
+echo "(Ctrl+C to stop early)"
+echo ""
+
+python train.py --epochs "$EPOCHS" --batch-size 32
+
+deactivate
+cd ..
+
+echo ""
+echo "✓ Training complete!"
+echo ""
+echo "Model saved to: models/library_detector.pth"
+echo ""
+echo "Next step: script/export"

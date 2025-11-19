@@ -1,0 +1,60 @@
+#!/bin/bash
+# Collect negative example images using SerpAPI
+
+set -e
+
+# Load .env file if it exists
+if [ -f ".env" ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
+if [ -z "$SERPAPI_API_KEY" ]; then
+    echo "Error: SERPAPI_API_KEY not found"
+    echo ""
+    echo "Get a free API key at: https://serpapi.com/"
+    echo ""
+    echo "Then either:"
+    echo "  1. Add to .env file:"
+    echo "     echo 'SERPAPI_API_KEY=your-api-key-here' > .env"
+    echo ""
+    echo "  2. Or export it:"
+    echo "     export SERPAPI_API_KEY='your-api-key-here'"
+    exit 1
+fi
+
+# Number of images to collect (default: 100)
+COUNT=${1:-100}
+
+echo "Setting up collection environment..."
+cd training
+
+# Create virtual environment if it doesn't exist
+if [ ! -d ".venv" ]; then
+    echo "Creating virtual environment..."
+    uv venv
+fi
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Install collection dependencies
+echo "Installing collection dependencies..."
+uv pip install -q -r collect_requirements.txt
+
+echo ""
+echo "Collecting $COUNT negative examples..."
+echo "This will search for: mailboxes, birdhouses, yard scenes, etc."
+echo ""
+
+python collect_negatives.py \
+    --api-key "$SERPAPI_API_KEY" \
+    --count "$COUNT"
+
+deactivate
+cd ..
+
+echo ""
+echo "Next steps:"
+echo "  1. Review images in training-data/negatives/"
+echo "  2. Remove any that don't look good"
+echo "  3. Run: script/split-data"

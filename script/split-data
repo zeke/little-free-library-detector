@@ -1,0 +1,86 @@
+#!/bin/bash
+# Split raw training data into train/val/test splits
+
+set -e
+
+echo "Splitting training data..."
+
+# Check if source directories exist
+if [ ! -d "training-data/positives" ]; then
+    echo "Error: training-data/positives directory not found"
+    exit 1
+fi
+
+if [ ! -d "training-data/negatives" ]; then
+    echo "Error: training-data/negatives directory not found"
+    echo ""
+    echo "You need negative examples (images without libraries)."
+    echo "Create training-data/negatives and add images like:"
+    echo "  - Mailboxes"
+    echo "  - Birdhouses"
+    echo "  - Newspaper boxes"
+    echo "  - Residential exteriors"
+    echo "  - Street scenes"
+    exit 1
+fi
+
+# Count images
+pos_count=$(find training-data/positives -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | wc -l | tr -d ' ')
+neg_count=$(find training-data/negatives -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | wc -l | tr -d ' ')
+
+echo "Found:"
+echo "  Positives: $pos_count images"
+echo "  Negatives: $neg_count images"
+
+if [ "$pos_count" -lt 50 ]; then
+    echo ""
+    echo "Warning: Only $pos_count positive images. Recommend at least 100 for good results."
+fi
+
+if [ "$neg_count" -lt 50 ]; then
+    echo ""
+    echo "Warning: Only $neg_count negative images. Recommend at least 100 for good results."
+fi
+
+# Activate Python environment
+cd training
+
+# Create virtual environment if it doesn't exist
+if [ ! -d ".venv" ]; then
+    echo "Creating virtual environment..."
+    uv venv
+    source .venv/bin/activate
+    echo "Installing dependencies..."
+    uv pip install -q -r requirements.txt
+else
+    source .venv/bin/activate
+fi
+
+# Split positives
+echo ""
+echo "Splitting positive images..."
+python organize_data.py \
+    --source ../training-data/positives \
+    --dest ../data \
+    --class library
+
+# Split negatives
+echo ""
+echo "Splitting negative images..."
+python organize_data.py \
+    --source ../training-data/negatives \
+    --dest ../data \
+    --class not_library
+
+deactivate
+cd ..
+
+echo ""
+echo "✓ Data split successfully!"
+echo ""
+echo "Data split:"
+find data/train -type f | wc -l | xargs echo "  Train:"
+find data/val -type f | wc -l | xargs echo "  Validation:"
+find data/test -type f | wc -l | xargs echo "  Test:"
+echo ""
+echo "Next step: script/train"

@@ -1,0 +1,13 @@
+{
+  "name": "library-detector-inference",
+  "version": "1.0.0",
+  "description": "Little Free Library detector using ONNX Runtime",
+  "type": "module",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "onnxruntime-node": "^1.16.0",
+    "sharp": "^0.33.0"
+  }
+}

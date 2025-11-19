@@ -1,0 +1,29 @@
+#!/bin/bash
+# Test the ONNX model on an image using Node.js
+
+set -e
+
+if [ ! -f "models/library_detector.onnx" ]; then
+    echo "Error: ONNX model not found"
+    echo "Run: scripts/export"
+    exit 1
+fi
+
+if [ -z "$1" ]; then
+    echo "Usage: scripts/test <image_path>"
+    echo ""
+    echo "Example:"
+    echo "  scripts/test training-data/positives/library1.jpg"
+    exit 1
+fi
+
+if [ ! -f "$1" ]; then
+    echo "Error: Image file not found: $1"
+    exit 1
+fi
+
+# Convert to absolute path before changing directories
+IMAGE_PATH=$(cd "$(dirname "$1")" && pwd)/$(basename "$1")
+
+cd inference
+node detect.js "$IMAGE_PATH"

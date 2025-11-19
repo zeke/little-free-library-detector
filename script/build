@@ -1,0 +1,62 @@
+#!/bin/bash
+# Build the complete model pipeline from raw training data to ONNX
+
+set -e
+
+echo "🏗️  Building little free library detector..."
+echo ""
+echo "This will:"
+echo "  1. Downsize training images"
+echo "  2. Split data into train/val/test"
+echo "  3. Train the model"
+echo "  4. Export to ONNX format"
+echo ""
+read -p "Continue? (y/n) " -n 1 -r
+echo ""
+
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Build cancelled"
+    exit 0
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Step 1/4: Downsizing images..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+./script/downsize
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Step 2/4: Splitting data..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+./script/split-data
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Step 3/4: Training model..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+./script/train
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Step 4/4: Exporting to ONNX..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+./script/export
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "✨ Build complete!"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "Model files created:"
+echo "  models/library_detector.pth   (PyTorch checkpoint)"
+echo "  models/library_detector.onnx  (ONNX for deployment)"
+echo ""
+echo "Next steps:"
+echo "  Test in Node.js: script/test <image_path>"
+echo "  Test in browser: script/serve"
+echo ""

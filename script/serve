@@ -1,0 +1,21 @@
+#!/bin/bash
+# Start a local web server to test the browser demo
+
+set -e
+
+if [ ! -f "models/library_detector.onnx" ]; then
+    echo "Error: ONNX model not found"
+    echo "Run: scripts/export"
+    exit 1
+fi
+
+PORT=${1:-8080}
+
+echo "Starting web server..."
+echo ""
+echo "  Browser demo: http://localhost:$PORT/inference/browser.html"
+echo ""
+echo "Press Ctrl+C to stop"
+echo ""
+
+python3 -m http.server "$PORT"
